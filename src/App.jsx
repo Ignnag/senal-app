@@ -63,17 +63,14 @@ function timeAgo(iso) {
 
 async function fetchArticles() {
   // Llama a nuestra propia función serverless (mismo dominio), nunca a gnews.io directamente.
-  const tryLang = async (lang) => {
-    const res = await fetch(`/api/news?lang=${lang}`);
-    const data = await res.json();
-    if (!res.ok) {
-      const msg = data?.errors?.[0] || data?.error || `Error ${res.status}`;
-      throw new Error(msg);
-    }
-    return data.articles || [];
-  };
-  let articles = await tryLang("es");
-  if (!articles.length) articles = await tryLang("en");
+  // El servidor ya combina español + inglés y aplica el filtro geográfico.
+  const res = await fetch(`/api/news`);
+  const data = await res.json();
+  if (!res.ok) {
+    const msg = data?.errors?.[0] || data?.error || `Error ${res.status}`;
+    throw new Error(msg);
+  }
+  const articles = data.articles || [];
   return articles.map((a) => {
     const text = `${a.title || ""} ${a.description || ""}`;
     return {
